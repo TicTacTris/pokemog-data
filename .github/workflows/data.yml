@@ -1,0 +1,49 @@
+name: Validate and publish data
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      initial:
+        description: 'Publish exact pinned baseline (first release only)'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: pokemog-data-publisher
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - run: npm test
+  publish:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - run: npm test
+      - name: Generate, validate, upload draft, verify, publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INITIAL: ${{ inputs.initial || false }}
+        run: |
+          if [ "$INITIAL" = "true" ]; then
+            node tools/update.mjs --initial --publish
+          else
+            node tools/update.mjs --publish
+          fi

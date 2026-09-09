@@ -1,0 +1,9 @@
+{
+  "name": "pokemog-data",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test", "update": "node tools/update.mjs" },
+  "license": "MIT"
+}
