@@ -63,7 +63,9 @@ const body = `PvPoke source: https://github.com/pvpoke/pvpoke/commit/${commit}\n
 const target = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 gh(['release', 'create', tag, '--repo', repo, '--target', target, '--draft', '--title', `PokeMog data ${manifest.datasetVersion}`, '--notes', body])
 gh(['release', 'upload', tag, '--repo', repo, ...['manifest.json', ...names].map(name => `dist/${name}`)])
-const draft = await api(`repos/${repo}/releases/tags/${tag}`)
+// GitHub's release-by-tag endpoint excludes drafts; the CLI resolves drafts too.
+const { apiUrl } = JSON.parse(gh(['release', 'view', tag, '--repo', repo, '--json', 'apiUrl']))
+const draft = await (await request(apiUrl)).json()
 assert.equal(draft.draft, true)
 assert.deepEqual(draft.assets.map(a => a.name).sort(), ['manifest.json', ...names].sort())
 for (const asset of draft.assets) {
