@@ -1,4 +1,5 @@
 // Shared transform from iv-lab/scripts/evolution-metadata.mjs; see SOURCE.md.
+import { validateGraph } from './contract.mjs'
 export function evolutionMetadata(base, master, commit) {
   const upstream = new Map(master.pokemon.map(p => [p.speciesId, p]))
   const ids = new Set(base.map(p => p.id))
@@ -41,16 +42,7 @@ export function evolutionMetadata(base, master, commit) {
       hasEvolutionData: !!original.family,
     }]
   }))
-  const visited = new Set(), visiting = new Set()
-  function visit(id) {
-    if (visiting.has(id)) throw new Error(`Evolution cycle at ${id}`)
-    if (visited.has(id)) return
-    visiting.add(id)
-    metadata[id].evolutions.forEach(visit)
-    visiting.delete(id)
-    visited.add(id)
-  }
-  base.forEach(p => visit(p.id))
+  validateGraph(base.map(p => ({ id: p.id, evolutions: metadata[p.id].evolutions })))
   for (const [id, targets] of [['eevee', ['sylveon', 'umbreon']], ['cubone', ['marowak', 'marowak_alolan']], ['slowpoke_galarian', ['slowbro_galarian', 'slowking_galarian']], ['bulbasaur_shadow', ['ivysaur_shadow']]]) {
     if (ids.has(id) && !targets.every(t => metadata[id].evolutions.includes(t))) throw new Error(`Lost evolution branch: ${id}`)
   }

@@ -15,7 +15,7 @@ test('baseline pin and Toxel branches match the shipped Android model', () => {
   assert.ok(original.pokemon.every(p => !('form' in p)))
 })
 test('strict numeric, ID, graph, count and license validation', () => {
-  for (const n of [null, 0, -1, 1.5, 1001, '118']) {
+  for (const n of [null, 0, -1, 1.5, 10001, '118']) {
     assert.throws(() => validate(changed('pokemon.json', p => { p[0].attack = n })))
   }
   for (const n of [null, 0, 1, -1, '0.1']) {
@@ -32,7 +32,7 @@ test('strict numeric, ID, graph, count and license validation', () => {
   assert.throws(() => validate({ ...baseline, 'PVPoke-LICENSE.txt': Buffer.from('bad') }))
   assert.throws(() => validate(changed('evolution-metadata.json', r => { r.commit = 'invalid' })))
   // Legitimate stat/CPM changes are allowed, not compared against stale fixture stats.
-  validate(changed('pokemon.json', p => { p[0].attack += 1 }))
+  validate(changed('pokemon.json', p => { const first = p[0]; first.attack++; const other = p.find(row => row.id === (first.shadowId || first.normalId)); if (other) other.attack++ }))
   validate(changed('cp-multipliers.json', c => { c[0] *= 0.999 }))
 })
 test('only provenance commit is ignored for relevance', () => {

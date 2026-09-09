@@ -61,3 +61,11 @@ contents:write in the publishing job. No PAT is stored.
 The first manual run with `initial=true` regenerates the pin, asserts byte parity
 against baseline, and publishes that exact baseline; later initial runs fail.
 See [SOURCE.md](SOURCE.md) for corrections, fixture scope and licensing.
+
+See [SECURITY.md](SECURITY.md) for limits, workflow controls and the trust model.
+Hashes verify manifest consistency, not independent publisher authenticity.
+Synthetic accepted/rejected contract cases are in
+`test/fixtures/contract-fixtures.json`; graph depth counts the root as 1 and
+reachability includes the root. The frozen 147-row mathematical contract remains
+independent of current upstream stats. No application repository is modified by
+the publisher.
